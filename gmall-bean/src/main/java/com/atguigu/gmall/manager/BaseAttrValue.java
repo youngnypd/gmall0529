@@ -13,6 +13,5 @@ public class BaseAttrValue extends SuperBean {
 
     private String attrId;
 
-    private String isEnabled;
 
 }
