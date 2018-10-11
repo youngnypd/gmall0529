@@ -34,7 +34,7 @@
         attrInfoAndValue.id = $("#attrId").val();
         //getValue
         attrInfoAndValue.attrName = $("#attrName").textbox('getValue');
-
+        attrInfoAndValue.catalog3Id = getCatalog3Info().id;
 
         //2）、获取基本属性的所有的值
         attrInfoAndValue.attrValues = $("#attrInfoValueTable").datagrid('getRows');

@@ -35,6 +35,8 @@
                     $('#ctg2ForAttrList').combobox('reload','basecatalog/2/list.json?id='+rec.id);
                     $('#ctg2ForAttrList').combobox('clear');
                     $('#ctg3ForAttrList').combobox('clear');
+                    $('#attrInfoTable').datagrid({url:''});
+                    $('#attrInfoTable').datagrid('loadData',{total:0,rows:[]});
                  }"></select>
             二级分类：
             <select id="ctg2ForAttrList" name="ctg2ForAttrList"   class="easyui-combobox" style="width:100px"
@@ -42,6 +44,8 @@
                 //刷新三级分类的内容
                 $('#ctg3ForAttrList').combobox('clear');
                 $('#ctg3ForAttrList').combobox('reload','basecatalog/3/list.json?id='+rec.id);
+                $('#attrInfoTable').datagrid({url:''});
+                $('#attrInfoTable').datagrid('loadData',{total:0,rows:[]});
             }"></select>
             三级分类：
             <select name="ctg3ForAttrList" id="ctg3ForAttrList" class="easyui-combobox"  style="width:100px"
@@ -74,10 +78,66 @@
         if(getCatalog3Info()!=null){
             //1、弹出对话框
             $("#attrDlg").dialog('open');
+            $("#attrId").val("");
+            $("#attrName").textbox('clear');
+            $('#attrInfoValueTable').datagrid({url:''});
+            // 初始化datagrid
+            initAttrValueDatagrid();
+            //获取三级分类id,以及添加的属性名,下面的属性值,传给后台页面
+
         }else{
             $.messager.alert('警告','请先选择三级分类');
-        };
+        }
 
+    }
+    function initAttrValueDatagrid() {
+        // 加载旧数据 total, rows ：作为分页来使用。
+        $("#attrInfoValueTable").datagrid('loadData',{total:0,rows:[]});
+        // 获取datagrid 数据库
+        datagrid = $('#attrInfoValueTable').datagrid({
+            columns:[[
+                {field:'id',title:'编号', width:'20%'},
+                {field:'valueName',title:'属性名称的值', width:'80%',
+                    editor: {
+                        type: 'validatebox', options: { required: true}  // 必填项 ,
+                    }
+                }
+            ]],
+            toolbar: [{
+                iconCls: 'icon-add',
+                text:"添加",
+                handler: function(){
+                    // 需要在datagrid 中添加一个空行
+                    datagrid.datagrid('appendRow',{id:"",valueName:""});
+                }
+            },'-',{
+                iconCls: 'icon-remove',
+                text:"删除",
+                handler: function(){
+                    // 知道删除谁？ deleteRow，getSelected，getRowIndex
+                    var row = datagrid.datagrid("getSelected");
+                    if (row){
+                        var rowIndex  = datagrid.datagrid("getRowIndex",row);
+                        // 直接干掉
+                        datagrid.datagrid("deleteRow",rowIndex);
+                    }
+                }
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                //双击开启编辑行
+                datagrid.datagrid("beginEdit", rowIndex);
+                //设定当失去焦点时,退出编辑状态
+                var valueName = rowData.valueName;
+                $("input.datagrid-editable-input").val(valueName).bind("blur",function(evt){
+                    datagrid.datagrid('endEdit',rowIndex);
+                });
+            }
+//            onDblClickCell: function(index,field,value){
+//                $(this).datagrid('beginEdit', index);
+//                var ed = $(this).datagrid('getEditor', {index:index,field:field});
+//                $(ed.target).focus();
+//            }
+        });
     }
 
     /*修改attrInfo*/
