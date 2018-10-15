@@ -6,6 +6,7 @@
 <body>
 <div class="easyui-panel" title=""  data-options="border:true">
     <!-----------------列表 ----------------------------->
+    <!-- 页面上每一个属性名都和javaBean的属性名一模一样 -->
     <table id="spulist_dg" class="easyui-datagrid" title="spu列表"
            data-options="singleSelect:true,method:'get' ,toolbar:'#spulist_tb'">
         <thead>
@@ -22,8 +23,8 @@
             <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="popAddSpuInfoModal()">添加</a>
             <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true">编辑</a>
             <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true">增加sku</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true"> sku列表</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="popAddSkuModal()">增加sku</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="popListSkuModal()"> sku列表</a>
             <a href="#" class="easyui-linkbutton" iconCls="icon-ok" plain="true"> SPU商品上架</a>
         </div>
         <div>
@@ -49,7 +50,8 @@
             三级分类：
             <select name="ctg3ForSpuList" id="ctg3ForSpuList" class="easyui-combobox"  style="width:100px"
                     data-options="valueField:'id',textField:'name',onSelect:function(rec){
-                  refreshSpuListTable(rec.id)
+                    //查询三级分类下对应的商品信息
+                    refreshSpuListTable(rec.id);
                 }"></select>
             <a href="#" onclick="refreshSpuListTable()" class="easyui-linkbutton" iconCls="icon-search">刷新属性列表</a>
         </div>
@@ -58,44 +60,119 @@
 
 <!--引入spu信息输入框页面-->
 <div th:include="spu/spuInfoPage"></div>
+<div th:include="sku/skuInfoPage"></div>
+<div th:include="sku/skuListPage"></div>
 </body>
 <script language="javascript">
     /*<![CDATA[*/
+    //显示平台属性选项
+    function renderBaseAttr() {
+        /* <label class="infoGroupLabel">
+                <label>篇幅</label>
+                <select>
+                    <option>长篇</option>
+                    <option>短片</option>
+                </select>
+            </label>
+          */
+        var c3id = getSpuCatalog3Info().id;
+        $.get('sku/base_attr_info.json?id='+c3id,function (data) {
+            $.each(data,function () {
+                var bigLabel = $("<label class='infoGroupLabel'></label>");
+                bigLabel.append("<label>"+this.attrName+"</label>")
+                var selectEL = $("<select></select>");
+                $.each(this.attrValues,function () {
+                    var optionEl = $("<option value='"+this.id+"'>"+this.valueName+"</option>")
+                    selectEL.append(optionEl);
+                });
+                bigLabel.append(selectEL);
+                $("#attrInfoGroup").append(bigLabel).append(" ");
+            })
 
-    //刷新spu商品信息列表
-    function refreshSpuListTable(id) {
-        var c3id = null;
-        if(id != null){
-            c3id = id;
-        }else{
-            c3id = getSpuCatalog3Info().id
+        });
+    }
+    //显示销售属性选项
+    function renderSaleAttr() {
+
+        var spuId = getSelectedSpuInfoRow().id;
+        $.get('sku/spu_sale_attr.json?id='+spuId,function (data) {
+            $.each(data,function () {
+                var bigLabel = $("<label class='infoGroupLabel'></label>");
+                bigLabel.append("<label>"+this.saleAttrName+"</label>")
+                var selectEL = $("<select></select>");
+                $.each(this.saleAttrValues,function () {
+                    var optionEl = $("<option value='"+this.id+"'>"+this.saleAttrValueName+"</option>")
+                    selectEL.append(optionEl);
+                });
+                bigLabel.append(selectEL);
+                $("#spuSaleAttrGroup").append(bigLabel);
+            })
+
+        });
+
+    }
+        //弹出增加sku的modal
+       function popAddSkuModal() {
+           var spuInfo = getSelectedSpuInfoRow();
+           if(spuInfo == null){
+               $.messager.alert("警告","请先选择一个spu才能为他增加sku的信息")
+           }else{
+               $("#sku_dlg").dialog('open');
+               renderBaseAttr();
+               renderSaleAttr();
+           }
+       }
+
+       //弹出spu下对应的所有sku列表信息
+        function popListSkuModal() {
+            var spuInfo = getSelectedSpuInfoRow();
+            if(spuInfo == null){
+                $.messager.alert("警告","请先选择一个spu才能为他增加sku的信息")
+            }else{
+                $("#skulist_dlg").dialog('open');
+            }
         }
 
-        //获取数据，刷新到表格中
-        $("#spulist_dg").datagrid({
-            url:'spu/info.json?catalog3Id='+c3id
-        })
-    }
 
-    //打开spu信息编辑弹出框
-    function popAddSpuInfoModal() {
-        if(getSpuCatalog3Info()!=null){
-            $("#spu_dlg").dialog('open');
-        }else{
-            $.messager.alert('警告','请先选择三级分类');
-        };
-    }
 
-    //获取三级分类的信息
-    function getSpuCatalog3Info(){
-        var id = $("#ctg3ForSpuList").combobox("getValue");
-        var text = $("#ctg3ForSpuList").combobox("getText");
-        var info = {id:id,name:text};
-        if(id == ""){
-            return null;
+        //刷新spu商品信息列表
+        function refreshSpuListTable(id) {
+            var c3id = null;
+            if(id != null){
+                c3id = id;
+            }else{
+                c3id = getSpuCatalog3Info().id
+            }
+
+            //获取数据，刷新到表格中
+            $("#spulist_dg").datagrid({
+                url:'spu/info.json?catalog3Id='+c3id
+            })
         }
-        return info;
-    }
+
+        //打开spu信息编辑弹出框
+        function popAddSpuInfoModal() {
+            if(getSpuCatalog3Info()!=null){
+                $("#spu_dlg").dialog('open');
+            }else{
+                $.messager.alert('警告','请先选择三级分类');
+            };
+        }
+
+        //获取三级分类的信息
+        function getSpuCatalog3Info(){
+            var id = $("#ctg3ForSpuList").combobox("getValue");
+            var text = $("#ctg3ForSpuList").combobox("getText");
+            var info = {id:id,name:text};
+            if(id == ""){
+                return null;
+            }
+            return info;
+        }
+
+        function getSelectedSpuInfoRow() {
+            return $("#spulist_dg").datagrid('getSelected')
+        }
 
     /*]]>*/
 </script>
