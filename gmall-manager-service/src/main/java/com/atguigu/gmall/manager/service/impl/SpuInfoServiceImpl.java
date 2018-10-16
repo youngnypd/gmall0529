@@ -7,6 +7,7 @@ import com.atguigu.gmall.manager.spu.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class SpuInfoServiceImpl implements SpuInfoService {
     }
 
 
+    @Transactional
     @Override
     public void saveBigSpuInfo(SpuInfo spuInfo) {
 
@@ -78,5 +80,15 @@ public class SpuInfoServiceImpl implements SpuInfoService {
             }
 
         }
+    }
+
+    /**
+     * 根据spuId查询这个商品所有的图片,需要在增加sku页面显示出来,还有详情页也需要展示出来
+     * @param spuId
+     * @return
+     */
+    @Override
+    public List<SpuImage> getSpuImageBySpuId(Integer spuId) {
+        return spuImageMapper.selectList(new QueryWrapper<SpuImage>().eq("spu_id",spuId));
     }
 }

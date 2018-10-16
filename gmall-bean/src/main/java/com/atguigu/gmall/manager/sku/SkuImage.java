@@ -1,8 +1,12 @@
 package com.atguigu.gmall.manager.sku;
 
 import com.atguigu.gmall.SuperBean;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class SkuImage extends SuperBean {
 

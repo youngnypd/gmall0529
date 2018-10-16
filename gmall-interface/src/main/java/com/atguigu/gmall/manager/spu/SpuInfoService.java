@@ -9,4 +9,6 @@ public interface SpuInfoService {
 
     //spuInfo的大保存
     void saveBigSpuInfo(SpuInfo spuInfo);
+
+    List<SpuImage> getSpuImageBySpuId(Integer spuId);
 }
