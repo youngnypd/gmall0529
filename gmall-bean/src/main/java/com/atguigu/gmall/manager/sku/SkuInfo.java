@@ -33,5 +33,5 @@ public class SkuInfo extends SuperBean {
     @TableField(exist = false)
     private List<SkuSaleAttrValue> skuSaleAttrValues;
     @TableField(exist = false)
-    private List<SkuAllSaleAttrAndValueTo> skuAllSaleAttrAndValueTos;
+    private List<SkuAllSaleAttrAndValueTo> skuAllSaveAttrAndValueTos;
 }

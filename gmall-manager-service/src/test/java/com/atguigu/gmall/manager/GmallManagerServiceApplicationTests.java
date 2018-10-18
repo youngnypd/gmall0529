@@ -7,9 +7,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 1、导入mybatis-plus的starter
@@ -39,7 +45,27 @@ public class GmallManagerServiceApplicationTests {
 	@Autowired
 	CatalogService catalogService;
 
+	@Autowired
+	StringRedisTemplate stringRedisTemplate;//k-v都是string
 
+	@Autowired
+	RedisTemplate redisTemplate;//k-v 都是object
+	@Autowired
+	JedisPool jedisPool;
+	@Test
+	public void testJedisPool(){
+		Jedis jedis = jedisPool.getResource();
+		jedis.set("jedis","jedisValue");
+		String value = jedis.get("jedis");
+		System.out.println("jedis的值是:"+value);
+	}
+	@Test
+	public void testRedisTemplate(){
+		ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+		operations.set("hello","world",20,TimeUnit.SECONDS);
+		System.out.println("redis存储了吗?");
+
+	}
 
 	@Test
 	public void testCatalogService(){

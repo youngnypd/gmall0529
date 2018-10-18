@@ -2,6 +2,7 @@ package com.atguigu.gmall.manager.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.atguigu.gmall.manager.BaseAttrInfo;
+import com.atguigu.gmall.manager.sku.SkuEsService;
 import com.atguigu.gmall.manager.sku.SkuInfo;
 import com.atguigu.gmall.manager.sku.SkuManagerService;
 import com.atguigu.gmall.manager.spu.SpuImage;
@@ -24,6 +25,19 @@ public class SkuManagerController {
     @Reference
     SpuInfoService spuInfoService;
 
+    @Reference
+    SkuEsService skuEsService;
+
+    /**
+     * 根据商品的skuid进行上架功能
+     * @param skuId
+     * @return
+     */
+    @RequestMapping("/onSale")
+    public String onSale(@RequestParam("skuId") Integer skuId){
+        skuEsService.onSale(skuId);
+        return "ok";
+    }
     /**
      *返回sku页面
      * @param spuId

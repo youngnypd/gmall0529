@@ -56,14 +56,33 @@ $(function(){
 
 
 
-	
+		/*跳转商品页面*/
 	    function switchSkuId() {
-		 
+		 	//alert("切换!!!!!");
+			//1.需要知道每个被选中的id是什么
+			/*
+			* var ids = new Array();
+			$.each($("dd.redborder"),function () {
+                ids.push($(this).attr('value'))
+            });*/
+			var ids =new Array();
+			$.each($("dd.redborder"),function () {
+				ids.push($(this).attr('value'));
+            });
+            //ids = ids.reverse();
+			var idsStr = ids.join(',');//105,108
+            //alert(idsStr);
+			//2.根据这两个销售属性值的id就可以得到skuid
+            var skuId = $("input[name='"+idsStr+"']").val();
+            //alert(skuId);
+            //跳转到指定位置
+            if(skuId == undefined){
+                return;
+            }else {
+                location.href='/'+skuId+".html";
+            }
+
         }
-
-
-	
-
 		$(".box-attr dd").click(function() {
 			$(this).css({
 				"border": "solid 1px red"
