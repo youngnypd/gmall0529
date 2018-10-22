@@ -20,13 +20,13 @@
                     首页
                 </a>
             </div>
- 
+
         </b>
         <ul>
             <li>
                 <a href="#" class="li_2">你好，请登录</a>
             </li>
-        
+
         </ul>
     </div>
 </div>
@@ -67,18 +67,18 @@
 <div class="GM_ipone">
     <div class="GM_ipone_bar">
         <div class="GM_ipone_one a">
-            筛选条件	    
+            筛选条件
         </div>
-		<i><img src="./image/right-@1x.png" alt=""></i>
+        <i><img src="./image/right-@1x.png" alt=""></i>
         <span  >&quot;小米&quot;</span>
-		<a class="select-attr"     href="#"     > 2G<b> ✖ </b>
-		</a>
-		 <a class="select-attr"   href="#"      > 屏幕尺寸:5.1-5.5英寸<b> ✖ </b>
-		</a>
+        <a class="select-attr"     href="#"     > 2G<b> ✖ </b>
+        </a>
+        <a class="select-attr"   href="#"      > 屏幕尺寸:5.1-5.5英寸<b> ✖ </b>
+        </a>
 
     </div>
 </div>
- 
+
 <!--商品筛选和排序-->
 <div class="GM_banner w">
     <div class="GM_nav">
@@ -90,28 +90,19 @@
             </div>
             <div class="GM_nav_logo">
 
-                <div class="GM_pre"  >
+                <div th:each="baseAttr:${searchResult.baseAttrInfos}" class="GM_pre"  >
                     <div class="sl_key">
-                        <span  >属性1111：</span>
+                        <span th:text="${baseAttr.attrName}" >属性1111：</span>
                     </div>
                     <div class="sl_value">
                         <ul>
-                            <li  ><a  href="#"  >属性值111</a></li>
-							<li  ><a  href="#"  >属性值222</a></li>
-						  </ul>
+                            <li  th:each="attrValue:${baseAttr.attrValues}">
+                                <a  th:text="${attrValue.valueName}" href="#"  >属性值111</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-				 <div class="GM_pre"  >
-                    <div class="sl_key">
-                        <span  >属性222：</span>
-                    </div>
-                    <div class="sl_value">
-                        <ul>
-                             <li  ><a href="#"   >属性值333</a></li>
-							<li  ><a href="#"  >属性值444</a></li>
-							</ul>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -207,37 +198,26 @@
 
                     <!--排序内容-->
                     <div class="rig_tab" style="width:940px">
-                      <div style="width:215px"   >
+                        <div th:each="skuInfo:${searchResult.skuInfoEsVos}" style="width:215px"   >
                             <p class="da">
-                                <a href="#"  onclick="javascript:item('1')">
-                                    <img     src="img/57d0d400Nfd249af4.jpg" class="dim">
+                                <a href="#" th:onclick="'item('+${skuInfo.id}+')'"   onclick="javascript:item('1')">
+                                    <img   th:src="${skuInfo.skuDefaultImg}"  src="img/57d0d400Nfd249af4.jpg" class="dim">
                                 </a>
                             </p>
 
                             <p class="tab_R">
-                                <span >¥5199.00</span>
+                                <span th:text="${skuInfo.price}">¥5199.00</span>
                             </p>
 
-                                <a href="#" title=""  onclick="javascript:item('1')"  class="tab_JE"  >
-                                    Apple iPhone 7 Plus (A1661) 32G 黑色 移动联通电信4G手机
-                                </a>
+                            <a th:utext="${skuInfo.skuName}"
+                               href="#" title=""
+                               th:onclick="'item('+${skuInfo.id}+')'"
+                               onclick="javascript:item('1')"
+                               class="tab_JE"  >
+                                Apple iPhone 7 Plus (A1661) 32G 黑色 移动联通电信4G手机
+                            </a>
                         </div>
-				    <div style="width:215px"   >
-                            <p class="da">
-                                <a href="#"  onclick="javascript:item('1')">
-                                    <img     src="img/57d0d400Nfd249af4.jpg" class="dim">
-                                </a>
-                            </p>
 
-                            <p class="tab_R">
-                                <span >¥5199.00</span>
-                            </p>
-
-                                <a href="#" title=""  onclick="javascript:item('1')"  class="tab_JE"  >
-                                    Apple iPhone 7 Plus (A1661) 32G 黑色 移动联通电信4G手机
-                                </a>
-                        </div>
- 
                     </div>
 
 
@@ -257,24 +237,24 @@
                                     下一页 >
                                 </a>
                             </span>
-<!--                            <span class="page_span2">
-                                <em>共<b>169</b>页&nbsp;&nbsp;到第</em>
-                                <input type="number" value="1">
-                                <em>页</em>
-                                <a href="#">确定</a>
-                            </span>-->
+                            <!--                            <span class="page_span2">
+                                                            <em>共<b>169</b>页&nbsp;&nbsp;到第</em>
+                                                            <input type="number" value="1">
+                                                            <em>页</em>
+                                                            <a href="#">确定</a>
+                                                        </span>-->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-  </div>
+    </div>
 </div>
 
 <br/>
 <br/>
 
- <!--底部-->
+<!--底部-->
 <footer class="footer">
     <div class="footer_top">
         <ul>
@@ -379,16 +359,16 @@
     });
     //显示隐藏
     var $li = $(".GM_nav_logo>div:gt(3)").hide();
-      $('.GM_show span').click(function(){
-          if($li.is(':hidden')){
-              $li.show();
-              $(this).css({width:"86px"}).text('收起 ^');
-          }else{
-              $li.hide();
-              $('.GM_show span').css({width:"291px"}).text('更多选项（ CPU核数、网络、机身颜色 等）');
-          }
-          return false;
-      });
+    $('.GM_show span').click(function(){
+        if($li.is(':hidden')){
+            $li.show();
+            $(this).css({width:"86px"}).text('收起 ^');
+        }else{
+            $li.hide();
+            $('.GM_show span').css({width:"291px"}).text('更多选项（ CPU核数、网络、机身颜色 等）');
+        }
+        return false;
+    });
 
 
 

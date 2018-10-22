@@ -1,10 +1,11 @@
 package com.atguigu.gmall.manager.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.es.SkuBaseAttrEsVo;
 import com.atguigu.gmall.manager.BaseAttrInfo;
-import com.atguigu.gmall.manager.constant.RedisCacheKeyConstant;
+import com.atguigu.gmall.manager.constant.RedisCacheKeyConst;
 import com.atguigu.gmall.manager.mapper.BaseAttrInfoMapper;
 import com.atguigu.gmall.manager.mapper.sku.SkuAttrValueMapper;
 import com.atguigu.gmall.manager.mapper.sku.SkuImageMapper;
@@ -16,13 +17,11 @@ import com.atguigu.gmall.manager.spu.SpuSaleAttr;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +43,8 @@ public class SkuManagerServiceImpl implements SkuManagerService {
     SkuSaleAttrValueMapper skuSaleAttrValueMapper;
     @Autowired
     JedisPool jedisPool;//将数据存到redis中,不需要再从数据库中查找
+    @Reference
+    SkuEsService skuEsService;
     @Override
     public List<BaseAttrInfo> getBaseAttrInfoByCatalog3Id(Integer catalog3Id) {
         return baseAttrInfoMapper.getBaseAttrInfoByCatalog3Id(catalog3Id);
@@ -106,7 +107,7 @@ public class SkuManagerServiceImpl implements SkuManagerService {
     public SkuInfo getSkuInfoBySkuId(Integer skuId) {
         SkuInfo result = new SkuInfo();
         Jedis jedis = jedisPool.getResource();
-        String key = RedisCacheKeyConstant.SKU_INFO_PREFIX + skuId +RedisCacheKeyConstant.SKU_INFO_SUFFIX;
+        String key = RedisCacheKeyConst.SKU_INFO_PREFIX + skuId + RedisCacheKeyConst.SKU_INFO_SUFFIX;
         String s = jedis.get(key);
         if (s != null) {
             log.debug("缓存中找到了:{}",s);
@@ -125,7 +126,7 @@ public class SkuManagerServiceImpl implements SkuManagerService {
             //我们需要加锁
             // 拿到锁再去查数据库；
             String token = UUID.randomUUID().toString();
-            String lock = jedis.set(RedisCacheKeyConstant.LOCK_SKU_INFO, "ABC", "NX", "EX", RedisCacheKeyConstant.LOCK_TIMEOUT);
+            String lock = jedis.set(RedisCacheKeyConst.LOCK_SKU_INFO, "ABC", "NX", "EX", RedisCacheKeyConst.LOCK_TIMEOUT);
 
             if(lock == null){
                 //没有拿到锁
@@ -149,10 +150,10 @@ public class SkuManagerServiceImpl implements SkuManagerService {
                 //存到缓存中,第二天以后就会有人新查数据
                 if("null".equals(skuInfoJson)){
                     //空数据缓存时间短
-                    jedis.setex(key,RedisCacheKeyConstant.SKU_INFO_NULL_TIMEOUT,skuInfoJson);
+                    jedis.setex(key, RedisCacheKeyConst.SKU_INFO_NULL_TIMEOUT,skuInfoJson);
                 }else{
                     //正常数据缓存时间长
-                    jedis.setex(key,RedisCacheKeyConstant.SKU_INFO_TIMEOUT,skuInfoJson);
+                    jedis.setex(key, RedisCacheKeyConst.SKU_INFO_TIMEOUT,skuInfoJson);
                 }
             }
             jedis.close();
@@ -197,5 +198,20 @@ public class SkuManagerServiceImpl implements SkuManagerService {
             list.add(skuBaseAttrEsVo);
         }
         return list;
+    }
+
+    @Override
+    public List<BaseAttrInfo> getBaseAttrInfoGroupByValueId(List<Integer> valueId) {
+        return baseAttrInfoMapper.getBaseAttrInfoGroupByValueId(valueId);
+    }
+
+    @Override
+    public void incrSkuHotScore(Integer skuId) {
+        Jedis jedis = jedisPool.getResource();
+        Long hincrBy = jedis.hincrBy(RedisCacheKeyConst.SKU_HOT_SCORE, skuId + "", 1);
+        if(hincrBy % 3 == 0){
+            //更新ES的热度
+            skuEsService.updateHotScore(skuId,hincrBy);
+        }
     }
 }
