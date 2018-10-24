@@ -41,7 +41,6 @@ public class LoginController {
             return "index";
         }
 
-
         //1、登陆过了
         if(!StringUtils.isEmpty(token)){
             //都已经登陆过了就重定向到那个人那里
@@ -84,7 +83,6 @@ public class LoginController {
             }
 
         }
-
 
 
     }
