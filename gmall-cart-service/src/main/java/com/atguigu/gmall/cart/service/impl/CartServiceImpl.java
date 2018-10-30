@@ -118,7 +118,7 @@ public class CartServiceImpl implements CartService {
         //先判断这个用户是否有购物车
         Boolean flag = jedis.exists(CartConstant.USER_CART_PREFIX + userId);
         if (!flag) {
-            //用户没有购物车,直接创建购物车
+            //用户没有购物车,直接创建购物车,创建购物车方法里面有添加购物项
 
                 String cartKey = createCartVo(skuId, num, true, userId);
                 jedis.close();
@@ -199,13 +199,13 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartItem> getCartInfoList(String cartKey, boolean login) {
-
+        Jedis jedis = jedisPool.getResource();
         if (login) {
             //说明登陆了,
             cartKey = CartConstant.USER_CART_PREFIX + cartKey;
+            log.error("登陆之后的cartkey : {}", cartKey);
         }
-        Jedis jedis = jedisPool.getResource();
-        //键是购物车的键,值是购物车里面的东西
+         //键是购物车的键,值是购物车里面的东西
         List<CartItem> cartItemList =  new ArrayList<CartItem>();
         String fieldOrder = jedis.hget(cartKey, "fieldOrder");
         List list = JSON.parseObject(fieldOrder, List.class);
@@ -229,16 +229,38 @@ public class CartServiceImpl implements CartService {
     @Override
     public void checkItem(Integer skuId, Boolean checkFlag, String tempCartKey, int userId, boolean loginFlag) {
         //购物车勾选
-        String caryKey = loginFlag?CartConstant.USER_CART_PREFIX+ userId:tempCartKey;
+        String caryKey = loginFlag ? CartConstant.USER_CART_PREFIX + userId : tempCartKey;
         CartItem cartItem = getCartItemInfo(caryKey, skuId);
         //设置勾选状态
         cartItem.setCheck(checkFlag);
+        log.error("有选中的吗?{}",checkFlag);
+        System.out.println("被勾选之后的购物项是: " + cartItem);
 
         //修改购物车数据
         String string = JSON.toJSONString(cartItem);
         Jedis jedis = jedisPool.getResource();
         jedis.hset(caryKey,skuId+"",string);
         jedis.close();
+    }
+
+    /**
+     * 获取选中的商品
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<CartItem> getCheckedCartItemList(Integer userId) {
+        List<CartItem>  cartItemList = new ArrayList<CartItem>();
+        List<CartItem> cartInfoList = getCartInfoList(userId.toString(), true);
+        if (cartInfoList == null || cartInfoList.size() == 0) {
+            return null;
+        }
+        for (CartItem cartItem : cartInfoList) {
+            if (cartItem.isCheck()) {
+                cartItemList.add(cartItem);
+            }
+        }
+        return cartItemList;
     }
 
     /**
@@ -258,6 +280,9 @@ public class CartServiceImpl implements CartService {
             newCartKey = CartConstant.USER_CART_PREFIX + userId;
         } else {
            newCartKey = CartConstant.TEMP_CART_PREFIX + UUID.randomUUID().toString().substring(0, 10).replaceAll("-","");
+        }
+        if (skuId == null) {
+            return newCartKey;
         }
         //保存购物车数据；
         //1、查出商品的详细信息

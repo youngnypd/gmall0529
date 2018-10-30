@@ -6,4 +6,5 @@
     <select id="getUserByHaha" resultType="com.atguigu.gmall.manager.User">
       SELECT *  FROM user WHERE name=#{name} AND age=#{age}
     </select>
+
 </mapper>

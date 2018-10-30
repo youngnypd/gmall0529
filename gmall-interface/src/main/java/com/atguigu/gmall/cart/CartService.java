@@ -62,4 +62,11 @@ public interface CartService {
      * @param loginFlag
      */
     void checkItem(Integer skuId, Boolean checkFlag, String tempCartKey, int userId, boolean loginFlag);
+
+    /**
+     * 查询这个用户所选中的商品
+     * @param userId
+     * @return
+     */
+    List<CartItem> getCheckedCartItemList(Integer userId);
 }

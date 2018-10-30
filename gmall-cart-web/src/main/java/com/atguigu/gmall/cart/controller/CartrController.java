@@ -7,7 +7,6 @@ import com.atguigu.gmall.cart.CartItem;
 import com.atguigu.gmall.cart.CartService;
 import com.atguigu.gmall.cart.CartVo;
 import com.atguigu.gmall.constant.CookieConstant;
-import com.atguigu.gmall.user.UserInfo;
 import com.atguigu.gmall.utils.CookieUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +24,11 @@ public class CartrController {
     CartService cartService;
 
 
+    public String toTrade(){
+
+        return "";
+    }
+
     /**
      * 购物车勾选
      * @param skuId
@@ -34,7 +38,7 @@ public class CartrController {
      */
     @LoginRequired(needLogin = false)
     @ResponseBody
-    @RequestMapping("/checkItem")
+    @RequestMapping("checkItem")
     public String checkItem(Integer skuId,Boolean checkFlag,HttpServletRequest request){
         Map<String,Object> userInfo = (Map<String, Object>)
                 request.getAttribute(CookieConstant.LOGIN_USER_INFO_KEY);
@@ -57,7 +61,8 @@ public class CartrController {
      */
     @LoginRequired(needLogin = false)//不需要登陆,只要用户信息
     @RequestMapping("/cartList")
-    public String getCartInfoPage(HttpServletRequest request, HttpServletResponse response){
+    public String getCartInfoPage(HttpServletRequest request,
+                                  HttpServletResponse response){
         Map<String,Object> userInfo = (Map<String, Object>) request.getAttribute(CookieConstant.LOGIN_USER_INFO_KEY);
         //判断是否需要合并购物车？
         //temp:cart:9c766092f
@@ -69,6 +74,7 @@ public class CartrController {
             Cookie cookie = new Cookie(CookieConstant.COOKIE_CART_KEY, "372863287");
             cookie.setMaxAge(0);
             //立即删除之前临时购物车数据
+            cookie.setDomain("gmall.com");
             response.addCookie(cookie);
         }
 
@@ -120,6 +126,7 @@ public class CartrController {
                 //返回的是给你造的购物车在redis'中存数据用的key。
                 cartKey = cartService.addToCartUnLogin(skuId,null,num);
                 Cookie cookie = new Cookie(CookieConstant.COOKIE_CART_KEY, cartKey);
+                cookie.setDomain("gmall.com");
                 cookie.setMaxAge(CookieConstant.COOKIE_CART_KEY_MAX_AGE);
                 response.addCookie(cookie);
             }else {
