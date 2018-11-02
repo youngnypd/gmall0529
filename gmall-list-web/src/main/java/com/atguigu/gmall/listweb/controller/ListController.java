@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * 将页面可能提交的属性封装到SkuSearchParamESVo对象中
  */
@@ -23,7 +25,6 @@ public class ListController {
         //想要用户信息
         //eyJoZWFkSW1nIjoiMyIsIm5pY2tOYW1lIjoi5byg5LiJIiwibG9naW5OYW1lIjoiemhhbmdzYW4iLCJpZCI6MywiZW1haWwiOiJhdGd1aWd1LmNvbSJ9
         //以上解码就是用户信息
-
 
         return "hehe";
     }
